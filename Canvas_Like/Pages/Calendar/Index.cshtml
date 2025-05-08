@@ -1,0 +1,81 @@
+@page
+@using System.Text.Json
+@using Utility
+@model Canvas_Like.Pages.Calendar.IndexModel
+@{
+    ViewData["Title"] = "Calendar";
+}
+
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='utf-8' />
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
+    <link href="~/css/calendar-styles.css" rel="stylesheet">
+
+    <script>
+        const events = @Html.Raw(Json.Serialize(Model.objectEvents?.Select(e => new {
+          groupId = e.Calendar.CalendarName,
+          id = e.EventId,
+          title = e.Title,
+          start = e.Start.ToString("yyyy-MM-ddTHH:mm:ss"),
+          end = e.End.ToString("yyyy-MM-ddTHH:mm:ss"),
+          color = e.Calendar.Color
+        })));
+        const recurringEvents = @Html.Raw(Json.Serialize(Model.recurringObjectEvents?.Select(e => new {
+          groupId = e.Calendar.CalendarName,
+          daysOfWeek = WeekDayBitMapping.WeekDayArray(e.RecurringRule.WeekdayBitMap),
+          title = e.Title,
+          startTime = e.Start.ToString("HH:mm:ss"),
+          endTime = e.End.ToString("HH:mm:ss"),
+          startRecur = e.Start.ToString("yyyy-MM-dd"),
+          endRecur = e.RecurringRule.EndDate.ToString("yyyy-MM-dd"),
+          color = e.Calendar.Color
+        })));
+
+        @{
+            var assignmentsWithUrls = Model.Assignments?.Select(a => new
+            {
+
+                id = a.AssignmentId,
+
+                title = a.Title,
+
+                start = a.DueDateTime.ToString("yyyy-MM-ddTHH:mm:ss"),
+
+                end = a.DueDateTime.AddSeconds(1).ToString("yyyy-MM-ddTHH:mm:ss"),
+
+                url = Url.Page("/Assignments/Submissions/SubmitAssignment", new { assignmentId = a.AssignmentId })
+            });
+        }
+
+        const assignments = @Html.Raw(Json.Serialize(assignmentsWithUrls));
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                selectable: true,
+                footerToolbar: {
+                    right: 'dayGridMonth,listWeek',
+                },
+                buttonText: {
+                  today:    'Current Date',
+                  month: 'This Month',
+                  list: 'This Week'
+                },
+                events: [
+                  ...events, 
+                  ...recurringEvents,
+                  ...assignments
+                ]
+            });
+            calendar.render();
+        });
+    </script>
+</head>
+<body>
+    <div id='calendar'></div>
+</body>
+</html>
+

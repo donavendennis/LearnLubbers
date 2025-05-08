@@ -1,0 +1,46 @@
+Sprint 4 Notes
+
+Assignments will appear on callendar (to does for assignments)
+	Clickable
+	Assignmet submission page op click
+	
+Assignments todolist is dynamic
+	past due assignments will not appear
+	top five assignments will appear
+	in cronilogical order
+	
+Cards for home page	
+	clickable (home page cards)
+	Class page on click 
+	
+Class Page (students)
+	Shows assignments
+	header with class title
+	table (assignment title, duedate, possable points (out of 100)
+	submit button
+	
+Assignment Submission Page
+	Assignment title
+	Assignment description
+	Total points
+	Subimt type (file upload/Text entry)
+		TExt area for text entry
+		File submission field
+	Submitt button creates submission instance
+	
+Account page
+	Make payment (pay button0
+		add either redirect to payment on stripe
+		OR
+		Enter payment information on account page
+		
+Registration page
+	if alreadyu registed move to top
+	if not apear below registered courses
+	filter by department (only show courses of that department)
+	key word filter (if type software only show those with software)
+	
+	
+	
+	
+Get strip account set up for team

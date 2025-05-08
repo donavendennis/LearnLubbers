@@ -1,0 +1,191 @@
+﻿@page
+@model Canvas_Like.Pages.Assignments.IndexModel
+@inject SignInManager<IdentityUser> SignInManager
+@using Utility
+@{
+	ViewData["Title"] = "Assignments";
+}
+
+@if (SignInManager.IsSignedIn(User))
+{
+	<h1 class="display-4">@Model.ClassName</h1>
+
+	<div class="text-center">
+		<div class="col-md-10">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>
+							Title
+						</th>
+						<th>
+							Description
+						</th>
+						<th>
+							Due Date
+						</th>
+						<th>
+							Submission Type
+						</th>
+						<th>
+							Maximum Points
+						</th>
+						@if (User.IsInRole(SD.InstructorRole))
+						{
+							<th>
+								Published
+							</th>
+
+							<th>
+							</th>
+						}
+						<th>
+							Actions
+						</th>
+						@if (User.IsInRole(SD.InstructorRole))
+						{
+							<th>
+							</th>
+						}
+					</tr>
+				</thead>
+				<tbody>
+				@foreach (var objAssign in Model.AssignmentDetails)
+				{
+					if (User.IsInRole(SD.InstructorRole) || (User.IsInRole(SD.StudentRole) && objAssign.Published))
+					{
+						<tr>
+							<td>
+								@Html.DisplayFor(modelItem => objAssign.Title)
+							</td>
+							<td>
+								@Html.DisplayFor(modelItem => objAssign.Description)
+							</td>
+							<td>
+								@Html.DisplayFor(modelItem => objAssign.DueDateTime)
+							</td>
+							<td>
+								@Html.DisplayFor(modelItem => objAssign.SubmissionType)
+							</td>
+							<td>
+								@Html.DisplayFor(modelItem => objAssign.Points)
+							</td>
+							@if (User.IsInRole(SD.InstructorRole))
+							{
+								<td>
+									@(objAssign.Published ? "Yes" : "No")
+								</td>
+								<td>
+									<a asp-page="Upsert" asp-route-classId="@objAssign.ClassId"
+									   asp-route-assignmentId="@objAssign.AssignmentId">
+										<button class="btn btn-primary m-1">Edit</button>
+									</a>
+								</td>
+								<td>
+									<form method="post" asp-page-handler="Delete">
+										<input type="hidden" name="id" asp-for="@objAssign.AssignmentId" />
+										<button type="submit" class="btn btn-danger m-1">Delete</button>
+									</form>
+								</td>
+								<td>
+									<a asp-page="/Assignments/Submissions/ViewSubmissions" asp-route-assignmentId="@objAssign.AssignmentId">
+										<button class="btn btn-primary m-1">Submissions</button>
+									</a>
+								</td>
+							}
+							else if (User.IsInRole(SD.StudentRole))
+							{
+								<td>
+										<a asp-page="Submissions/SubmitAssignment" asp-route-assignmentId="@objAssign.AssignmentId">
+										<button class="btn btn-primary m-1">Submit</button>
+									</a>
+								</td>
+							}
+						</tr>
+					}
+				}
+				</tbody>
+				@if (User.IsInRole(SD.InstructorRole))
+				{
+				<tfoot>
+					<tr>
+						<td class="text-">
+							<a asp-page="Upsert" asp-route-classId="@Model.ClassId"
+							   asp-route-assignmentId="">
+								<button class="btn btn-primary m-1">Add Assignment</button>
+							</a>
+						</td>
+					</tr>
+				</tfoot>
+				}
+			</table>
+		</div>
+	</div>
+	@if (User.IsInRole(SD.StudentRole))
+	{
+		<div class="text-right">
+			<h3><b>Your Grade:</b> @Model.FinalGrade (@Model.FinalScore/100)</h3>
+		</div>
+
+		<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+		<script type="text/javascript">
+			google.charts.load('current', { packages: ['corechart'] });
+			google.charts.setOnLoadCallback(drawChart);
+
+			function drawChart() {
+				var classAverage = @Model.ClassAverage;
+				var yourGrade = @Model.FinalScore;
+
+				if (classAverage == null || classAverage === 0) {
+					classAverage = 0;
+				}
+
+				if (yourGrade == null || yourGrade === 0) {
+					yourGrade = 0;
+				}
+
+				var data = google.visualization.arrayToDataTable([
+					['Class', 'Class Average', 'Your Grade'],
+					['Grade', classAverage, yourGrade],
+				]);
+
+				var options = {
+					title: 'Class Grade Comparison',
+					titleTextStyle: {
+						color: 'white',
+					},
+					hAxis: {
+						title: '@Model.ClassName',
+						minValue: 0,
+						maxValue: 100,
+						titleTextStyle: {
+							color: 'white',
+						},
+						textStyle: {
+							color: 'white',
+						},
+					},
+					vAxis: {
+						title: 'Grade Overview',
+						titleTextStyle: {
+							color: 'white',
+						},
+						textStyle: {
+							color: 'white',
+						},
+					},
+					legend: { position: 'top', textStyle: { color: 'white' } }, // Change the legend text color
+					colors: ['orange', 'blue'],
+					backgroundColor: '#1D3041',
+				};
+
+				var chart = new google.visualization.BarChart(document.getElementById('chart_div'));
+				chart.draw(data, options);
+			}
+		</script>
+		<div id="chart_div" style="width: 600px; height: 300px;" class="m-2"></div>
+
+
+	}
+}
+

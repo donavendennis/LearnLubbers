@@ -1,0 +1,102 @@
+﻿@using Infrastructure.Models
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using Utility
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+@inject UnitOfWork UnitOfWork
+
+@{
+
+    var newAssignments = new List<Assignment>();
+    var newGraded = new List<AssignmentSubmission>();
+    string? profilePictureUrl = null;
+
+    if (SignInManager.IsSignedIn(User)) {
+        var userId = UserManager.GetUserId(User);
+        var user = UnitOfWork.ApplicationUser.GetAll()
+            .FirstOrDefault((u) => u.Id == userId);
+        if (user == null) {
+            return;
+        }
+        profilePictureUrl = user.ProfilePictureUrl;
+        var enrollments = UnitOfWork.StudentRegistration.GetAll()
+        .Where((r) => r.StudentId == userId)
+        .Select((r) => r.ClassId);
+    newAssignments = UnitOfWork.Assignment.GetAll()
+        .Where((a) => enrollments.Contains(a.ClassId))
+        .ToList();
+    newGraded = UnitOfWork.AssignmentSubmission.GetAll()
+        .Where((s) => s.StudentId == userId && s.Grade != null)
+        .ToList();
+    var signIns = UnitOfWork.UserSignIns.GetAll()
+        .Where((s) => s.UserId == userId)
+        .OrderByDescending(s => s.SignInTime).ToList();
+    var penultimateSignIn = signIns.Count() >= 2 ?  signIns[1] : null;
+    if (penultimateSignIn != null) {
+        newAssignments = newAssignments
+            .Where((a) => a.DateCreated >= penultimateSignIn.SignInTime)
+            .ToList();
+        newGraded = newGraded
+            .Where((s) => s.GradedOn >= penultimateSignIn.SignInTime)
+            .ToList();
+    }
+    }
+}
+
+<ul class="navbar-nav">
+@if (SignInManager.IsSignedIn(User))
+    {
+        @if (profilePictureUrl != null)
+    {
+        <li class="nav-item">
+                <img src="@Url.Content(profilePictureUrl)" class="img-fluid rounded-circle" style="width: 50px; height: 50px; object-fit: cover;" />
+        </li>
+    }
+    <li class="nav-item">
+        <a class="nav-link" asp-area="Identity" asp-page="/Account/Manage/Index" title="Update Profile">Profile</a>
+    </li>
+    <li class="nav-item my-auto">
+      <div class="dropdown">
+        <div class="bell-container"data-toggle="dropdown">
+            <i class="nav-item fas fa-bell" asp-area="Identity"  style="font-size:18px;"></i>
+            @if (newAssignments.Count() + newGraded.Count() > 0) {
+            <span class="badge">
+                @(newAssignments.Count() + newGraded.Count())
+            </span>
+            }
+        </div>
+        <div class="dropdown-menu dropdown-menu-left" aria-labelledby="dropdownMenuButton">
+            @if (newAssignments.Count() > 0) {
+                <h6 class="dropdown-header">New Assignments</h6>
+                @foreach (var Assignment in newAssignments) {
+                    <a href="/Assignments/Submissions/SubmitAssignment?assignmentId=@Assignment.AssignmentId" 
+                    class="dropdown-item">@Assignment.Title </a>
+                }
+            }
+            @if (newGraded.Count() > 0) {
+                <h6 class="dropdown-header">Recently Graded</h6>
+                @foreach (var Submission in newGraded) {
+                    <a 
+                    href="/Assignments/Submissions/SubmitAssignment?assignmentId=@Submission.Assignment.AssignmentId" 
+                    class="dropdown-item">@Submission.Assignment.Title: @Submission.Grade / @Submission.Assignment.Points </a>
+                }
+            }
+            @if (newAssignments.Count() + newGraded.Count() == 0) {
+                <h6 class="dropdown-header">No notifications</h6>
+            }
+        </div>
+      </div>
+    </li>
+    <li class="nav-item">
+        <i class="nav-link text-dark" asp-area="Identity">
+            <span class="border-start mx-2"></span>
+        </i>
+    </li>
+    <li class="nav-item">
+        <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/Index", new { area = "" })">
+            <button  type="submit" class="nav-link btn btn-link">Logout</button>
+        </form>
+    </li>
+}
+</ul>

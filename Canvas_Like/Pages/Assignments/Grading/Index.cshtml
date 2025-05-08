@@ -1,0 +1,101 @@
+@page "{submissionId:int?}"
+@model Canvas_Like.Pages.Assignments.Grading.IndexModel
+
+@{
+  ViewData["Title"] = "Grading";
+}
+
+<style>
+  /* Thank you ChatGPT */
+  /* Hide number input spinners for WebKit (Chrome, Safari) */
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+  }
+
+  /* Hide number input spinners for Firefox */
+  input[type="number"] {
+      -moz-appearance: textfield; /* Change appearance in Firefox */
+  }
+</style>
+<script>
+  function validateInput(event, currentValue) {
+    const charCode = event.charCode || event.keyCode;
+    if (charCode < 48 || charCode > 57) {
+      return false;
+    }
+    const newValue = currentValue + String.fromCharCode(charCode);
+    const maxPoints = @Model.assignment.Points;
+    const newValueNum = Number(newValue);
+    return newValueNum <= maxPoints && newValueNum >= 0;
+  }
+</script>
+<div class="card w-100">
+  <h3 class="card-header">@Model.assignment.Title</h3>
+  <div class="card-body">
+    <h5>
+      @Model.assignment.Description
+    </h5>
+  </div>
+  <div class="card-body">
+  @if (Model.assignment.SubmissionType == "Text Entry") {
+    <div>
+      <textarea
+        style="height: fit-content; min-height: 20em; max-height: 50em;"
+        class="form-control" readonly>
+        @Model.assignmentSubmission.Submission
+      </textarea>
+    </div>
+  } else if (Model.assignment.SubmissionType == "File Upload") {
+    <div>
+
+      @for (int i = 0; i < Model.FileUrl.Count(); i++) {
+        <button class="btn btn-primary">
+          <a class="text-decoration-none text-white" href="@Model.FileUrl[i]" download="@Model.FileName[i]">
+            Download
+          </a>
+        </button>
+      }
+    </div>
+  }
+  </div>
+  <div class="card-body">
+    <form method="post">
+      <div class="d-flex flex-row justify-content-end">
+        <div 
+          class="input-group"
+        >
+          <input asp-for="@Model.assignmentSubmission.AssignmentSubmissionId" type="hidden">
+          <input 
+            asp-for="@Model.assignmentSubmission.Grade"
+            type="number" 
+            style="width: 2em; max-width: fit-content;" 
+            min=0
+            id="grade"
+            max=@Model.assignment.Points
+            onkeypress="return validateInput(event, this.value)"
+            class="ml-auto form-control text-center"
+          />
+          <span class="input-group-text">/ @Model.assignment.Points</span>
+        </div>
+        <div class="ml-2">
+          @if (!Model.assignmentSubmission.Grade.HasValue) {
+          <button class="btn btn-primary" type="submit">
+            Submit
+          </button>
+          }
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+<a asp-page="/Assignments/Submissions/ViewSubmissions" asp-route-assignmentId="@Model.assignmentSubmission.AssignmentId">Back to Submissions</a>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var gradeInput = document.getElementById("grade");
+        if (gradeInput.value) {
+            gradeInput.setAttribute("readonly", "readonly");
+        }
+    });
+</script>

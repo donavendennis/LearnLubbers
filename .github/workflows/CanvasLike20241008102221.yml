@@ -1,0 +1,56 @@
+name: Build and deploy .NET Core application to Web App CanvasLike20241008102221
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  actions: write
+  contents: write
+
+env:
+  AZURE_WEBAPP_NAME: CanvasLike20241008102221
+  AZURE_WEBAPP_PACKAGE_PATH: Canvas_Like/published
+  CONFIGURATION: Release
+  DOTNET_CORE_VERSION: 8.0.x
+  WORKING_DIRECTORY: Canvas_Like
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout the repository
+      - uses: actions/checkout@v4
+      
+      # Setup .NET SDK
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
+      
+      # Restore dependencies
+      - name: Restore
+        run: dotnet restore "${{ env.WORKING_DIRECTORY }}"
+      
+      # Build the application
+      - name: Build
+        run: dotnet build "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }} --no-restore
+      
+      # Run tests
+      - name: Test
+        run: dotnet test "${{ env.WORKING_DIRECTORY }}" --no-build
+      
+      # Publish the application
+      - name: Publish
+        run: dotnet publish "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }} --no-build --output "${{ env.AZURE_WEBAPP_PACKAGE_PATH }}"
+      
+      # Deploy to Azure WebApp directly
+      - name: Deploy to Azure WebApp
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.CanvasLike20241008102221_D7A2 }}
+          package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+

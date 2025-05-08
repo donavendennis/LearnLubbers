@@ -1,0 +1,108 @@
+﻿@page
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using Utility
+@model Canvas_Like.Pages.Assignments.UpsertModel
+@{
+	<div class="card-header bg-secondary pt-4 pb-3 text-center">
+		<h2 class="text-white py-2">@(@Model.objAssignment.Published ? "Update" : "Create") Assignment</h2>
+	</div>
+	<form method="post" enctype="multipart/form-data">
+		<div class="border p-3">
+			<div class="form-group">
+				<table>
+					<tr>
+						<td>
+							<label for="" class="form-label">File Upload</label>
+						</td>
+						<td>
+							<input class="form-control m-1" type="file" asp-for="UploadFiles" id="uploadBox" multiple />
+						</td>
+						<td>
+							<span class="file-custom"></span>
+							<button type="submit" name="action" value="Upload" class="btn btn-primary m-1">Upload File</button>
+						</td>
+					</tr>
+				</table>
+			</div>
+			<br />
+			@if (@Model.objAttachments.Count != 0)
+			{
+				<div class="form-group" id="attachments">
+					<table>
+						<thead>
+							<tr>
+								<th>File</th>
+								<th>Action</th>
+							</tr>
+						</thead>
+						<tbody id="attachmentsTableBody">
+							@foreach (var attachment in Model.objAttachments)
+							{
+								@if (attachment.Keep)
+								{
+									<tr>
+										<td>
+											<a href="@attachment.FileUrl" download="@attachment.FileName">@attachment.FileName</a>
+										</td>
+										<td>
+											<button type="submit" name="deleteId" value="@attachment.AssignmentAttachmentId" class="btn btn-danger m-1">Delete Attachment</button>
+										</td>
+									</tr>
+								}
+							}
+						</tbody>
+					</table>
+				</div>
+			}
+			@Html.ValidationSummary(true, "", new { @class = "text-danger" })
+			<div class="form-group">
+				<label asp-for="@Model.objAssignment.Title" class="control-label"></label>
+				<input asp-for="@Model.objAssignment.Title" class="form-control" />
+				<span asp-validation-for="@Model.objAssignment.Title" class="text-danger"></span>
+			</div>
+
+			<div class="form-group">
+				<label asp-for="@Model.objAssignment.DueDateTime" class="control-label">Due Date</label>
+				<input asp-for="@Model.objAssignment.DueDateTime" class="form-control" type="datetime-local" />
+			</div>
+
+			<div class="form-group">
+				<label asp-for="@Model.objAssignment.Points" class="control-label">Points</label>
+				<input asp-for="@Model.objAssignment.Points" class="form-control" type="number" />
+				<span asp-validation-for="@Model.objAssignment.Points" class="text-danger"></span>
+			</div>
+
+			<div class="form-group">
+				<label asp-for="@Model.objAssignment.Description" class="control-label">Descriptions</label>
+				<textarea asp-for="@Model.objAssignment.Description" class="form-control single-line"></textarea>
+				<span asp-validation-for="@Model.objAssignment.Description" class="text-danger"></span>
+			</div>
+
+			<div class="form-group">
+				<label asp-for="@Model.objAssignment.SubmissionType" class="control-label">Submission Type</label>
+				<select asp-for="@Model.objAssignment.SubmissionType" class="form-control">
+					<option value="@SubmissionTypes.Txt">Text Entry</option>
+					<option value="@SubmissionTypes.File">File Submission</option>
+				</select>
+				<span asp-validation-for="@Model.objAssignment.SubmissionType" class="text-danger"></span>
+			</div>
+			<input asp-for="@Model.objAssignment.AssignmentId" type="hidden" />
+			<input asp-for="@Model.objAssignment.ClassId" type="hidden" />
+			<input asp-for="@Model.objAssignment.Published" type="hidden" />
+			<input asp-for="@Model.objAssignment.ToDoId" type="hidden" />
+			<br />
+			<div class="row">
+				<div class="col">
+					<button type="submit" class="btn btn-primary form-control m-1" name="action" value="Publish">
+						@(@Model.objAssignment.Published ? "Publish Update" : "Publish")
+					</button>
+				</div>
+				<div class="col">
+					<button type="submit" class="btn btn-danger form-control m-1" name="action" value="Cancel">
+						@(@Model.objAssignment.Published ? "Cancel Update" : "Cancel Create")
+					</button>
+				</div>
+			</div>
+		</div>
+	</form>
+}

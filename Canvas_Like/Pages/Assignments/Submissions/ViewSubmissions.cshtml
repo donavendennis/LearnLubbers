@@ -1,0 +1,133 @@
+﻿@page
+@model Canvas_Like.Pages.Assignments.Submissions.ViewSubmissionsModel
+@inject SignInManager<IdentityUser> SignInManager
+@using Utility
+@{
+    ViewData["Title"] = "View Submissions";
+}
+
+@if (SignInManager.IsSignedIn(User) && User.IsInRole(SD.InstructorRole)){
+        <h1 class="display-4">@Model.AssignmentName</h1>
+    <div class="text-center">
+        <div class="col-md-10">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>
+                            Student Name
+                        </th>
+                        <th>
+                            Date Submitted
+                        </th>
+                        <th>
+                            Grade
+                        </th>
+                        <th>
+                            Max Points
+                        </th>
+                        <th>
+                            Actions
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                @for (int i = 0; i < Model.Submissions.Count(); i++)
+                {
+                    var objSubmit = Model.Submissions.ElementAt(i);
+                    <tr>
+                        <td>
+                            @Model.UserFullNames.ElementAt(i)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => objSubmit.SubmissionDateTime)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => objSubmit.Grade) 
+                        </td>
+                        <td>
+                            @Model.Points
+                        </td>
+                        <td>
+                            <a asp-page="/Assignments/Grading/Index" asp-route-submissionId="@objSubmit.AssignmentSubmissionId">
+                                <button class="btn btn-primary m-1">Grade</button>
+                            </a>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <a asp-page="/Assignments/Index" asp-route-classId="@Model.ClassId">Back to assignments</a>
+
+    <!-- Google Chart Script -->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+        google.charts.load('current', { 'packages': ['corechart'] });
+        google.charts.setOnLoadCallback(drawChart);
+
+        function drawChart() {
+            var data = new google.visualization.DataTable();
+            data.addColumn('string', 'Grade Range'); // X-axis: Grade Ranges
+            data.addColumn('number', 'Count');       // Y-axis: Number of students
+
+            data.addRows([
+        @foreach (var gradeSet in Model.GetGradeDistribution())
+        {
+            <text>['@gradeSet.GradeRangeStart - @gradeSet.GradeRangeEnd', @gradeSet.Count],</text>
+        }
+                ]);
+
+            var options = {
+                title: 'Grade Distribution',
+                titleTextStyle: {
+                    color: 'white',
+                },
+                hAxis: {
+                    title: 'Grade',
+                    minValue: 0,
+                    titleTextStyle: {
+                        color: 'white',
+                    },
+                    textStyle: {
+                        color: 'white',
+                    },
+                },
+                vAxis: {
+                    title: 'Number of Students',
+                    minValue: 0,
+                    format: '0',
+                    titleTextStyle: {
+                        color: 'white',
+                    },
+                    textStyle: {
+                        color: 'white',
+                    },
+                },
+                legend: { position: 'none' },
+                bar: { gap: 0 }, // Set bar gap to make bars closer
+                chartArea: {
+                    width: '80%',
+                    height: '70%',
+                    titleTextStyle: {
+                        color: 'white',
+                    },
+                    textStyle: {
+                        color: 'white',
+                    },
+                },
+                legend: { position: 'top', textStyle: { color: 'white' } }, // Change the legend text color
+                backgroundColor: '#1D3041',
+            };
+
+            var chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
+            chart.draw(data, options);
+        }
+    </script>
+
+    <div id="chart_div" style="width: 800px; height: 400px;"></div>
+
+
+
+
+}

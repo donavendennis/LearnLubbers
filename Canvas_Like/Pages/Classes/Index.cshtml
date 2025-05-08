@@ -1,0 +1,76 @@
+﻿@page
+@model Canvas_Like.Pages.Classes.IndexModel
+@inject SignInManager<IdentityUser> SignInManager
+@{
+    ViewData["Title"] = "Classes";
+}
+
+<!--Created dynamic table of classes for an instructor. KB.-->
+
+@if (SignInManager.IsSignedIn(User)){
+    <div class="text-center">
+        <div class="col-md-10">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>
+                            Department
+                        </th>
+                        <th>
+                            Course Number
+                        </th>
+                        <th>
+                            Days
+                        </th>
+                        <th>
+                            Times
+                        </th>
+                        <th>
+                            Building
+                        </th>
+                        <th>
+                            Room
+                        </th>
+                        <th>
+                            Actions
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+            @foreach(var objClass in Model.ClassViewModels){
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => objClass.Department)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => objClass.CourseNumber)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => objClass.Days)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => objClass.MeetingTime)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => objClass.Building)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => objClass.RoomNumber)
+                        </td>
+                        <td>
+                            <a asp-page="/Classes/Upsert" asp-route-id="@objClass.ClassId">Edit</a> |
+                            <a asp-page="/Classes/Details" asp-route-id="@objClass.ClassId">Details</a> |
+                            <a asp-page="/Classes/Delete" asp-route-id="@objClass.ClassId">Delete</a>
+                        </td>
+                    </tr>
+            }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td class="text-"><a asp-page="Upsert" asp-route-id="0">Add a class</a></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+}

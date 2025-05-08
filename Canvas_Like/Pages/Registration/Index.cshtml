@@ -1,0 +1,142 @@
+﻿@page
+@using System.Text.Json
+@model Canvas_Like.Pages.Registration.IndexPageModel
+@{
+    ViewData["Title"] = "Register";
+}
+
+<div>
+
+  <div class="w-100 d-flex">
+    <div class="mx-2 w-60" style="flex-grow: 1;">
+      <input id="course-search" autocomplete="off" class=" form-control mr-sm-2 " type="search" placeholder="Search" aria-label="Search"/>
+    </div>
+    <div class="mx-2">
+      <div class="input-group mb-3 flex-shrink">
+        <div class="input-group-prepend">
+          <label class="input-group-text" for="inputGroupSelect01">Dept.</label>
+        </div>
+        <select class="custom-select" id="dept-select">
+          <option selected>Choose...</option>
+            @foreach (var dept in Model.departmentList) {
+              <option value=@dept.DepartmentId >@dept.Name</option>
+            }
+        </select>
+      </div>
+    </div>
+  </div>
+
+
+  <table class="table table-hover">
+     <thead>
+      <tr>
+        <th scope="col">Title</th>
+        <th scope="col">Department</th>
+        <th scope="col">Course #</th>
+        <th scope="col"></th>
+      </tr>
+     </thead>
+     <tbody id="results">
+      @foreach (var objClass in Model.objClasses) {
+      <tr id=@objClass.ClassId class="class-rows">
+        <td>@objClass.Title </td>
+        <td>@objClass.Department </td>
+        <td>@objClass.CourseNo </td>
+        <td>
+          @if (!@objClass.IsRegistered) {
+              <form method="post" asp-page-handler="Register">
+                  <input type="hidden" name="classId" value="@objClass.ClassId" />
+                  <button type="submit" class="btn btn-outline-success"> Register </button>
+              </form>
+          } else {
+              <form method="post" asp-page-handler="Drop">
+                <button type="button" class="btn btn-outline-danger" data-toggle="modal" data-target="#exampleModalCenter">
+                  Drop
+                </button>
+                <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                  <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLongTitle">Are you sure?</h5>
+                      </div>
+                      <div class="modal-body">
+                        Clicking this will remove you from @objClass.Title.
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <input type="hidden" name="classId" value="@objClass.ClassId" />
+                        <button type="submit" class="btn btn-danger">Drop Class</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </form>
+          }
+        </td>
+      </tr>
+      }
+      </tbody>
+      </table>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.basic.min.js"></script>
+  <script>
+    // Create fuse instance with data for fuzzy finder
+    const data = @Html.Raw(Json.Serialize(Model.objClasses)) 
+    const options = {
+      keys : ["title", "department"],
+      threshold : .4
+    }
+    const fuse = new Fuse(data, options);
+    let rowIds = data.map( r => String(r.classId));
+    let selectedDept = null;
+    let selectedDeptIds = data.map( r => String(r.classId));
+
+    document.getElementById('course-search').addEventListener('input', function() {
+        const query = String(this.value);
+        const classRows = document.getElementsByClassName('class-rows')
+
+        if (!query || query.trim() == "") {
+          rowIds = data.map( r => String(r.classId));
+        } else {
+            const results = fuse.search(query);
+            const resultIds = results.map(r => String(r.item.classId)); // Ensure you're accessing the right property
+            rowIds = resultIds;
+      }
+      filterRows();
+    });
+    document.getElementById("dept-select").addEventListener("change", function() {
+      const selectElement = document.getElementById("dept-select");
+      const selectedValue = selectElement.value;
+      //if Choose... is selected then set as null
+      selectedDept = selectedValue == null || selectedValue == "Choose..." ?
+        null : selectedValue;
+
+      selectedDeptIds = data.map((r) =>{ 
+        if(r.departmentId == selectedDept) { 
+        return String(r.classId)
+      }});
+
+      filterRows();
+    });
+
+
+    function filterRows() {
+      const classRows = document.getElementsByClassName('class-rows')
+
+      //console.log(selectedDept);
+      Array.from(classRows).forEach( r => {
+        if (
+          rowIds.includes(String(r.id)) && 
+            (selectedDept == null || selectedDeptIds.includes( String(r.id)))) {
+          r.classList.remove("d-none");
+        }else {
+          r.classList.add("d-none"); 
+        }
+      })
+
+    }
+
+    // Function to get the selected value
+    // Attach the change event listener to the select element
+</script>
+
+</div>

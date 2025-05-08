@@ -1,0 +1,20 @@
+﻿@model List<Infrastructure.Models.ToDoList>
+@{
+    <title>@ViewData["ToDoList"] - Canvas_Like</title>
+    ;
+}
+
+<div class="todo-list">
+    @foreach (var item in Model)
+    {
+        <div class="row">
+            <div class="card" style="width:100%">
+                <div class="card-body">
+                    <h5 class="card-title">@item.Course</h5>
+                    <p class="card-text">Assignment: @item.AssignmentName</p>
+                    <p class="card-text">Due: @item.DueDate.ToString("MM/dd/yyyy")</p>
+                </div>
+            </div>
+        </div>
+    }
+</div>

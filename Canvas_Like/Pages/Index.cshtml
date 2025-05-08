@@ -1,0 +1,146 @@
+﻿@page
+@model IndexModel
+@inject SignInManager<IdentityUser> SignInManager
+@using Utility
+@{
+    ViewData["Title"] = "Home page";
+}
+<style>
+    /* Card container */
+    .card {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 1rem; /* Add margin between cards */
+        height: auto; /* Make sure all cards have the same height */
+    }
+
+    .card-img {
+        position: relative;
+        width: 100%;
+        height: 150px; /* Reduced fixed height for images */
+        background-size: cover;
+        background-position: center;
+    }
+
+    .card-body {
+        padding: 1rem; /* Padding for the card body */
+        flex: none;
+    }
+
+    .card-title {
+        margin-bottom: 0.5rem;
+    }
+
+    .card-text {
+        margin-bottom: 0;
+    }
+
+    /* Wrapper for class cards */
+    .class-card-wrapper {
+        width: 33.33%; /* Ensure 3 cards per row */
+        padding: 0 15px; /* Add some padding between columns */
+    }
+
+    .todo-list {
+        margin-top: 2rem;
+        max-width: 250px; /* Fixed width for To-Do list */
+        margin-left: auto; /* Align To-Do list to the right */
+        border: thick
+    }
+
+    /* Media query for small screens */
+    @@media (max-width: 768px) {
+        .class-card-wrapper {
+            width: 100%; /* Stack cards vertically on smaller screens */
+            margin-bottom: 1rem; /* Add spacing between stacked cards */
+        }
+    }
+
+    /* Card link styling */
+    .card-link {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+        width: 100%;
+    }
+</style>
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <div class="row">
+            <!-- Left column: Cards for classes -->
+            <div class="col-md-9 d-flex flex-wrap">
+                @foreach (var classObj in Model.objClasses)
+                {
+                    <div class="class-card-wrapper">
+                        @if (User.IsInRole(SD.InstructorRole))
+                        {
+                            <div class="card">
+                                <a class="card-link" asp-area="" asp-page="/Assignments/Index" asp-route-classId="@classObj.ClassId">
+                                    <div class="card-img"
+                                         style="background-image: url('/images/ComputerScience.png');">
+                                    </div>
+                                    <div class="card-body">
+                                        <h4 class="card-title"><b>@classObj.Title</b></h4>
+                                        <p class="card-text">@classObj.RoomNumber</p>
+                                    </div>
+                                </a>
+                            </div>
+                        }
+                        else if (User.IsInRole(SD.StudentRole))
+                        {
+                            <div class="card">
+                                <a class="card-link course-card" asp-area="" asp-page="/Assignments/Index" asp-route-classId="@classObj.ClassId">
+
+                                    <div class="card-img"
+                                         style="background-image: url('/images/ComputerScience.png');">
+                                    </div>
+                                    <div class="card-body">
+                                        <h4 class="card-title"><b>@classObj.Title</b></h4>
+                                        <p class="card-text">@classObj.RoomNumber</p>
+                                    </div>
+                                </a>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+
+            <!-- Right column: To-Do list -->
+            <div class="bg-secondary col-md-3">
+                <div class="todo-list m-auto mt-2">
+                    <h2 class="text-center m-auto">To-Do List</h2>
+                    @if (Model.objToDos.Any() && Model.AssignmentIds.Count == Model.objToDos.Count)
+                    {
+                        <ul class="list-group">
+                            @for (var i = 0; i < Model.objToDos.Count; i++)
+                            {
+                                <a asp-page="Assignments/Submissions/SubmitAssignment" asp-route-assignmentId="@Model.AssignmentIds[i]">
+                                <li class="list-group-item">
+                                  <div class="card border border-2 rounded">
+                                    <div class="card-body text-start">
+                                      <h5 class="card-title">@Model.objToDos[i].Title</h5>
+                                      <p class="card-text">@Model.objToDos[i].Description</p>
+                                      <p class="card-text"><strong>Due:</strong> @Model.objToDos[i].DueDate.ToString("MMM dd, yyyy h:mm tt")</p>
+                                    </div>
+                                  </div>
+                                </li>
+                                </a>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p>No To-Dos available.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <h3 class="lead">Welcome to our site!</h3>
+    }
+</div>

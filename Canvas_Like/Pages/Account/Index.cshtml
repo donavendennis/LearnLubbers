@@ -1,0 +1,182 @@
+﻿@page
+@model Canvas_Like.Pages.Payment.IndexModel
+@{
+    ViewData["Title"] = "Account";
+}
+
+<h3>@ViewData["Title"]</h3>
+@if (Model.tuitionCost > 0)
+{
+    <h4>You owe $@Model.tuitionCost</h4>
+    <h2 style="margin-top: 50px";>Pay Tuition</h2>
+
+
+    <!-- Include stripe.js -->
+    <script src="https://js.stripe.com/v3/"></script>
+
+    <!--asp-page-handler="Pay" specifies to use the OnPostPayAsync method. KB-->
+
+    <!-- Payment Form -->
+    <form id="payment-form" method="post" asp-page-handler="Pay" style="max-width: 500px;">
+        <!-- Payment amount -->
+        <label for="amount" style="display: block; margin-bottom: 5px;">Payment amount:</label>
+        <input type="number" id="amount" name="Amount" min="0" step="0.01" required style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 5px;" />
+        <span id="amount-error" style="color:red; display:none;">Invalid payment amount.</span>
+
+        <!-- Name on Card -->
+        <label for="name-on-card" style="display: block; margin-bottom: 5px;">Name on Card:</label>
+        <input type="text" id="name-on-card" placeholder="John E. Doe" required style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 5px;" />
+
+        <!-- Card Elements Container -->
+        <label for="card-number" style="display: block; margin-bottom: 5px;">Card Number:</label>
+        <div style="display: flex; align-items: center; margin-bottom: 15px;">
+            <div id="card-number" style="flex: 1; border: 1px solid #ccc; padding: 10px; border-radius: 5px;"></div>
+            <img id="card-brand-icon" src="" alt="Card Brand" style="width: 40px; height: auto; margin-left: 10px; display: none;">
+        </div>
+
+        <!-- Expiry and CVC side-by-side -->
+        <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+            <div style="flex: 1;">
+                <label for="card-expiry" style="display: block; margin-bottom: 5px;">Expiration Date:</label>
+                <div id="card-expiry" style="border: 1px solid #ccc; padding: 10px; width: 100%; border-radius: 5px;"></div>
+            </div>
+            <div style="flex: 1;">
+                <label for="card-cvc" style="display: block; margin-bottom: 5px;">CVC:</label>
+                <div id="card-cvc" style="border: 1px solid #ccc; padding: 10px; width: 100%; border-radius: 5px;"></div>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" id="pay" style="padding: 10px 20px; font-size: 16px; border-radius: 5px; cursor: pointer;">Pay</button>
+    </form>
+
+    <div id="card-errors" role="alert" style="color: red; margin-top: 10px;"></div>
+
+    <script>
+        // Stripe initialization
+        var stripe = Stripe('@Model.Configuration["Stripe:PublishableKey"]');
+        var elements = stripe.elements();
+
+        // Custom styling for the Stripe elements
+        var style = {
+            base: {
+                color: "#ffffff",
+                fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+                fontSize: '16px',
+                '::placeholder': {
+                    color: '#aab7c4'
+                },
+                iconColor: '#c4f0ff', // Sets the color of the brand icon
+            },
+            invalid: {
+                color: '#fa755a',
+                iconColor: '#fa755a'
+            }
+        };
+
+        // Create the individual card elements with custom styles
+        var cardNumber = elements.create('cardNumber', { style: style });
+        var cardExpiry = elements.create('cardExpiry', { style: style });
+        var cardCvc = elements.create('cardCvc', { style: style });
+
+        // Mount the elements to their corresponding divs
+        cardNumber.mount('#card-number');
+        cardExpiry.mount('#card-expiry');
+        cardCvc.mount('#card-cvc');
+
+        // Handle real-time validation errors from the card elements
+        cardNumber.on('change', function (event) {
+            var displayError = document.getElementById('card-errors');
+            var cardBrandIcon = document.getElementById('card-brand-icon');
+
+            // Handle error display for card elements
+            displayError.textContent = event.error ? event.error.message : '';
+
+            // Set the card brand icon based on the detected brand
+            var brandIcons = {
+                'visa': '/card logos/1.png',
+                'mastercard': '/card logos/2.png',
+                'amex': '/card logos/22.png',
+                'discover': '/card logos/14.png',
+                'jcb': '/card logos/16.png',
+                'diners': '/card logos/10.png',
+                'westernunion': '/card logos/6.png',
+                'unknown': '' // No icon for unknown brands
+            };
+
+            if (event.brand && brandIcons[event.brand]) {
+                cardBrandIcon.src = brandIcons[event.brand];
+                cardBrandIcon.style.display = event.brand === 'unknown' ? 'none' : 'block';
+            } else {
+                cardBrandIcon.style.display = 'none'; // Hide if no brand is detected
+            }
+
+            // Log the detected card brand for debugging
+            console.log("Detected card brand: " + event.brand);
+        });
+
+
+
+        // Handle form submission
+        var form = document.getElementById('payment-form');
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            stripe.createToken(cardNumber).then(function (result) {
+                if (result.error) {
+                    // Show error in #card-errors div
+                    document.getElementById('card-errors').textContent = result.error.message;
+                } else {
+                    // Insert the token into the form and submit
+                    var hiddenInput = document.createElement('input');
+                    hiddenInput.setAttribute('type', 'hidden');
+                    hiddenInput.setAttribute('name', 'Token');
+                    hiddenInput.setAttribute('value', result.token.id);
+                    form.appendChild(hiddenInput);
+
+                    form.submit();
+                }
+            });
+        });
+
+        // Debugs card-type element
+        cardNumber.on('change', function (event) {
+            var displayError = document.getElementById('card-errors');
+            if (event.error) {
+                displayError.textContent = event.error.message;
+            } else {
+                displayError.textContent = '';
+            }
+
+            if (event.brand) {
+                console.log("Detected card brand: " + event.brand); // This logs the card brand to the console.
+            }
+        });
+    </script>
+
+
+    @if (!string.IsNullOrEmpty(Model.Success))
+    {
+	    <div class="alert alert-success" id="success">
+		    @Model.Success
+	    </div>
+	    <div>
+		    <a href="@Model.ReceiptPath" download="Reciept">
+                <button style="padding: 10px 20px; font-size: 16px; border-radius: 5px; cursor: pointer;">
+				    Download Receipt
+			    </button>
+		    </a>
+	    </div>
+    }
+}
+else
+{
+    @if (!string.IsNullOrEmpty(Model.Success))
+    {
+        <div class="alert alert-success">
+            @Model.Success
+        </div>
+    }
+    <h4>No pending payments!</h4>
+}
+

@@ -1,0 +1,129 @@
+﻿@page
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model Canvas_Like.Pages.Classes.UpsertModel
+@{
+	<div class="cardaccordion-header" style="background-color: #1D3041; padding-top: 1rem; padding-bottom: 1rem; text-align: center;">
+        <h2 class="text-white py-2">@(Model.objClass.ClassId == 0 ? "Create" : "Edit") Class</h2>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" class="border p-3">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+        <div class="form-group">
+            <label class="control-label">Department</label>
+            @Html.DropDownListFor(d =>
+                    d.objClass.DepartmentId,
+                Model.DepartmentList,
+                "",
+                new { @class = "form-select", @id = "ddlDepartment" }
+            )
+        </div>
+
+        <div class="form-group">
+            <label asp-for="objClass.CourseNumber" class="control-label"></label>
+            <input asp-for="objClass.CourseNumber" class="form-control"/>
+            <span asp-validation-for="objClass.CourseNumber" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="objClass.Title" class="control-label"></label>
+            <input asp-for="objClass.Title" class="form-control"/>
+            <span asp-validation-for="objClass.Title" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="objDateStart" class="control-label"></label>
+            <input asp-for="objDateStart" class="form-control" type="date" />
+            <span asp-validation-for="objDateStart" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="objDateEnd" class="control-label"></label>
+            <input asp-for="objDateEnd" class="form-control" type="date" />
+            <span asp-validation-for="objDateEnd" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="objClass.Building" class="control-label"></label>
+            <input asp-for="objClass.Building" class="form-control"/>
+            <span asp-validation-for="objClass.Building" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="objClass.RoomNumber" class="control-label"></label>
+            <input asp-for="objClass.RoomNumber" class="form-control"/>
+            <span asp-validation-for="objClass.RoomNumber" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label>Days Met</label>
+            <div>
+                <input type="checkbox" name="DaysMet" value="Monday" id="Monday"
+                       @(Model.DaysMet.Contains("M") ? "checked" : "")/>
+                <label for="Monday">Monday</label>
+            </div>
+            <div>
+                <input type="checkbox" name="DaysMet" value="Tuesday" id="Tuesday"
+                       @(Model.DaysMet.Contains("Tu") ? "checked" : "")/>
+                <label for="Tuesday">Tuesday</label>
+            </div>
+            <div>
+                <input type="checkbox" name="DaysMet" value="Wednesday" id="Wednesday"
+                       @(Model.DaysMet.Contains("W") ? "checked" : "")/>
+                <label for="Wednesday">Wednesday</label>
+            </div>
+            <div>
+                <input type="checkbox" name="DaysMet" value="Thursday" id="Thursday"
+                       @(Model.DaysMet.Contains("Th") ? "checked" : "")/>
+                <label for="Thursday">Thursday</label>
+            </div>
+            <div>
+                <input type="checkbox" name="DaysMet" value="Friday" id="Friday"
+                       @(Model.DaysMet.Contains("F") ? "checked" : "")/>
+                <label for="Friday">Friday</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="objTimeStart" class="control-label"></label>
+            <input asp-for="objTimeStart" class="form-control" type="time" />
+            <span asp-validation-for="objTimeStart" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="objTimeEnd" class="control-label"></label>
+            <input asp-for="objTimeEnd" class="form-control" type="time" />
+            <span asp-validation-for="objTimeEnd" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="objClass.Capacity" class="control-label"></label>
+            <input asp-for="objClass.Capacity" class="form-control"/>
+            <span asp-validation-for="objClass.Capacity" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="objClass.CreditHours" class="control-label"></label>
+            <input asp-for="objClass.CreditHours" class="form-control"/>
+            <span asp-validation-for="objClass.CreditHours" class="text-danger"></span>
+        </div>
+        <input asp-for="objClass.ClassId" type="hidden" />
+        <input asp-for="objClass.InstructorId" type="hidden" />
+        <input asp-for="objClass.CalendarId" type="hidden" />
+        <input asp-for="objCalendar.CalendarId" type="hidden" />
+        <input asp-for="objEvent.EventId" type="hidden" />
+        <input asp-for="objEvent.CalendarId" type="hidden" />
+        <input asp-for="objEvent.CreatorId" type="hidden" />
+        <input asp-for="objEvent.RecurringRuleId" type="hidden" />
+        <input asp-for="objEvent.CanDelete" type="hidden" />
+        <input asp-for="objRecurringRulE.RecurringRuleId" type="hidden" />
+        <input asp-for="objRecurringRulE.Skip" type="hidden" />
+        <input asp-for="objRecurringRulE.Frequency" type="hidden" />
+        <input asp-for="objCalendarAccess.CalendarId" type="hidden" />
+        <input asp-for="objCalendarAccess.ApplicationUserId" type="hidden" />
+        <input asp-for="objCalendarAccess.CalendarRoleId" type="hidden" />
+        <button id="class-submit" type="submit" class="btn btn-primary form-control">@(Model.objClass.CalendarId == 0 ? "Create" : "Update")</button>
+    </form>
+
+    <a asp-page="/Classes/Index">Back to List</a>
+}

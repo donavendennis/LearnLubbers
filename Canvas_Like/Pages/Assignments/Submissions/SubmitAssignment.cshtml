@@ -1,0 +1,191 @@
+﻿@page
+@using Utility
+@model Canvas_Like.Pages.Assignments.Submissions.SubmitAssignmentModel
+@{
+	<div class="cardaccordion-header" style="background-color: #1D3041; padding-top: 1rem; padding-bottom: 1rem; text-align: center;">
+		<h2 class="text-white py-2">@(@Model.objSubmission.Submitted ? "Submit " : "View Submitted ")Assignment</h2>
+	</div>
+	<form method="post" enctype="multipart/form-data">
+		<div class="border p-3">
+			<div class="form-group" id="AssignmentDetails">
+				<div class="row">
+					<div class="col">
+						<h3 class="text-white py-3">@Model.objAssignment.Title</h3>
+						<input asp-for="@Model.objAssignment.AssignmentId" type="hidden" />
+						<input asp-for="@Model.objAssignment.ClassId" type="hidden" />
+					</div>
+					<div class="col">
+						<td>Points: @(@Model.objSubmission.Submitted ? @Model.objSubmission.Grade : "   ") / @Model.objAssignment.Points</td>
+					</div>
+				</div>
+				<div clas="row">
+					<table>
+						<tr>
+							<th>Due Date:</th>
+							<td>@Model.objAssignment.DueDateTime</td>
+						</tr>
+						<tr>
+							<th>Submission Type:</th>
+							<td>@Model.objAssignment.SubmissionType</td>
+							<input type="hidden" asp-for="objAssignment.SubmissionType" />
+						</tr>
+						<tr>
+							<th>Description:</th>
+							<td>@Model.objAssignment.Description</td>
+						</tr>
+					</table>
+
+				</div>
+				@if (Model.objAttachments.Any())
+				{
+					<div class="row">
+						<label>Resources:</label>
+					</div>
+					@foreach (var attachment in Model.objAttachments)
+					{
+						<div class="row">
+							<a href="@attachment.FileUrl" download="@attachment.FileName">@attachment.FileName</a>
+						</div>
+					}
+				}
+			</div>
+			<br />
+			<div class="form-group">
+				<div class="row">
+					<label>Submission: </label>
+				</div>
+				@if (@Model.objSubmission.Submitted)
+				{
+					<div class="row">
+						<label>Submitted on: @Model.objSubmission.SubmissionDateTime</label>
+					</div>
+
+				}
+				@if (@Model.objAssignment.SubmissionType == @SubmissionTypes.Txt)
+				{
+					<div class="row">
+						@if (@Model.objSubmission.Submitted)
+						{
+							<textarea asp-for="@Model.objSubmission.Submission" class="form-control" readonly></textarea>
+						}
+						else
+						{
+							<textarea asp-for="@Model.objSubmission.Submission" class="form-control"></textarea>
+						}
+					</div>
+				}
+				else
+				{
+					<input type="hidden" asp-for="@Model.objSubmission.Submission" />
+					for (int i = 0; i < @Model.FileName.Count(); i++)
+					{
+						<div class="row">
+							<div class="col">
+								<a href="@Model.FileUrl[i]" download="@Model.FileName[i]">"@Model.FileName[i]</a>
+							</div>
+							@if (!@Model.objSubmission.Submitted)
+							{
+								<div class="col">
+									<button type="submit" name="removeFile" value="@Model.FileUrl[i]" class="btn btn-danger m-1">Delete File</button>
+								</div>
+							}
+						</div>
+					}
+					@if (!@Model.objSubmission.Submitted)
+					{
+						<div class="row">
+							<div class="col">
+								<label for="" class="form-label">File Upload</label>
+							</div>
+							<div class="col">
+								<input type="file" asp-for=@Model.UploadFiles id="uploadBox" class="form-control m1" multiple />
+							</div>
+							<div class="col">
+								<span class="file-custom"></span>
+								<button type="submit" name="action" value="UploadFile" class="btn btn-primary m-1">Upload File</button>
+							</div>
+						</div>
+					}
+				}
+				<input type="hidden" asp-for="@Model.objSubmission.StudentId" />
+				<input type="hidden" asp-for="@Model.objSubmission.AssignmentSubmissionId" />
+				<input type="hidden" asp-for="@Model.objSubmission.Submitted" />
+				<input type="hidden" asp-for="@Model.objSubmission.SubmissionDateTime" />
+				<input type="hidden" asp-for="@Model.objSubmission.Grade" />
+				<input type="hidden" asp-for="@Model.objSubmission.AssignmentId" />
+				<div class="row">
+					@if (@Model.objSubmission.Submitted)
+					{
+						<div class="col">
+							<button type="submit" name="action" value="" class="btn btn-primary m-1">Return to Assignments</button>
+						</div>
+					}
+					else
+					{
+						<div class="col">
+							<button type="submit" name="action" value="SubmitAssignment" class="btn btn-primary m-1">Submit Assignment</button>
+						</div>
+						<div class="col">
+							<button type="submit" name="action" value="SaveDraft" class="btn btn-primary m-1">Save Draft</button>
+						</div>
+						<div class="col">
+							<button type="submit" name="action" value="DeleteDraft" class="btn btn-danger m-1">Delete Draft</button>
+						</div>
+					}
+				</div>
+			</div>
+		</div>
+	</form>
+
+	@if (@Model.objSubmission.Grade >= 0)
+	{
+		<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+		<script type="text/javascript">
+			google.charts.load('current', { packages: ['corechart'] });
+			google.charts.setOnLoadCallback(drawChart);
+
+			function drawChart() {
+				var data = google.visualization.arrayToDataTable([
+					['Assignment', 'Class Average', 'Your Grade'],
+					['Grade', @ViewData["ClassAverage"], @Model.objSubmission.Grade],
+				]);
+
+				var options = {
+					title: 'Assignment Grade Comparison',
+					titleTextStyle: {
+						color: 'white',
+					},
+					hAxis: {
+						title: '@Model.objAssignment.Title',
+						minValue: 0,
+						maxValue: @Model.objAssignment.Points,
+						titleTextStyle: {
+							color: 'white',
+						},
+						textStyle: {
+							color: 'white',
+						},
+					},
+					vAxis: {
+						title: 'Grade Overview',
+						titleTextStyle: {
+							color: 'white',
+						},
+						textStyle: {
+							color: 'white',
+						},
+					},
+					legend: { position: 'top', textStyle: { color: 'white' } }, // Change the legend text color
+					colors: ['orange', 'blue'], // Ensure these colors contrast well with a black background
+					backgroundColor: '#1D3041',
+				};
+
+				var chart = new google.visualization.BarChart(document.getElementById('chart_div'));
+				chart.draw(data, options);
+			}
+		</script>
+		<div id="chart_div" style="width: 600px; height: 300px;" class="m-2"></div>
+	}
+
+}
+

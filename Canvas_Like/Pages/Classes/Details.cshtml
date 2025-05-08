@@ -1,0 +1,42 @@
+﻿@page
+@model Canvas_Like.Pages.Classes.DetailsModel
+@{
+    ViewData["Title"] = "Class Details";
+}
+
+<h2>Class Details</h2>
+
+<div>
+    <dl class="row">
+        <dt class="col-sm-2">Department</dt>
+        <dd class="col-sm-10">@Model.Class.Department.Acronym</dd>
+
+        <dt class="col-sm-2">Course Number</dt>
+        <dd class="col-sm-10">@Model.Class.CourseNumber</dd>
+
+        <dt class="col-sm-2">Title</dt>
+        <dd class="col-sm-10">@Model.Class.Title</dd>
+
+        <dt class="col-sm-2">Building</dt>
+        <dd class="col-sm-10">@Model.Class.Building</dd>
+
+        <dt class="col-sm-2">Room Number</dt>
+        <dd class="col-sm-10">@Model.Class.RoomNumber</dd>
+
+        <dt class="col-sm-2">Capacity</dt>
+        <dd class="col-sm-10">@Model.Class.Capacity</dd>
+
+        <dt class="col-sm-2">Meeting Time</dt>
+        <dd class="col-sm-10">@ViewData["MeetingTime"]</dd>
+
+        <dt class="col-sm-2">Days Met</dt>
+        <dd class="col-sm-10">@ViewData["Days"]</dd>
+
+        <dt class="col-sm-2">Calendar ID</dt>
+        <dd class="col-sm-10">@Model.Class.CalendarId</dd>
+    </dl>
+
+    <a asp-page="/Classes/Index" class="btn btn-primary">Back to List</a>
+    <a asp-page="/Classes/Edit" asp-route-id="@Model.Class.ClassId" class="btn btn-secondary">Edit</a>
+    <a asp-page="/Classes/Delete" asp-route-id="@Model.Class.ClassId" class="btn btn-danger">Delete</a>
+</div>
