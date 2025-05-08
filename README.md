@@ -1,6 +1,6 @@
-# Canvas-Like
+# LearnLubbers
 
-Canvas-Like is a comprehensive web-based learning management system (LMS) designed to facilitate online education. Built with ASP.NET Core and Entity Framework, it provides a robust platform for instructors and students to manage classes, assignments, submissions, grading, payments, and more. The system features a clean, responsive interface with role-based access control to ensure appropriate permissions for different user types.
+LearnLubbers (formerly Canvas_Like) is a comprehensive web-based learning management system (LMS) designed to facilitate online education. Built with ASP.NET Core and Entity Framework, it provides a robust platform for instructors and students to manage classes, assignments, submissions, grading, payments, and more. The system features a clean, responsive interface with role-based access control to ensure appropriate permissions for different user types.
 
 ## Features
 
@@ -48,7 +48,7 @@ Canvas-Like is a comprehensive web-based learning management system (LMS) design
 ## Project Structure
 
 ```plaintext
-Canvas-Like/
+LearnLubbers/
 ├── Canvas_Like/                # Main application
 │   ├── Areas/                  # Identity and account management
 │   │   └── Identity/           # User authentication and profile management
